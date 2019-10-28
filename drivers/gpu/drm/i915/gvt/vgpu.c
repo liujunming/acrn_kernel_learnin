@@ -128,7 +128,7 @@ static struct {
  * Returns:
  * Zero on success, negative error code if failed.
  */
-int intel_gvt_init_vgpu_types(struct intel_gvt *gvt)
+int intel_gvt_init_vgpu_types(struct intel_gvt *gvt) //kvm使用，acrn未用
 {
 	unsigned int num_types;
 	unsigned int i, low_avail, high_avail;
@@ -336,7 +336,7 @@ void intel_gvt_destroy_vgpu(struct intel_vgpu *vgpu)
  * Returns:
  * pointer to intel_vgpu, error pointer if failed.
  */
-struct intel_vgpu *intel_gvt_create_idle_vgpu(struct intel_gvt *gvt)
+struct intel_vgpu *intel_gvt_create_idle_vgpu(struct intel_gvt *gvt) //vgpu切换时使用
 {
 	struct intel_vgpu *vgpu;
 	enum intel_engine_id i;

@@ -574,22 +574,22 @@ void intel_gvt_switch_mmio(struct intel_vgpu *pre,
  * @gvt: GVT device
  *
  */
-void intel_gvt_init_engine_mmio_context(struct intel_gvt *gvt)
+void intel_gvt_init_engine_mmio_context(struct intel_gvt *gvt)  //在不同平台上，所有需要save and restore的寄存器列表
 {
 	struct engine_mmio *mmio;
 
 	if (IS_SKYLAKE(gvt->dev_priv) ||
 		IS_KABYLAKE(gvt->dev_priv) ||
 		IS_BROXTON(gvt->dev_priv))
-		gvt->engine_mmio_list.mmio = gen9_engine_mmio_list;
+		gvt->engine_mmio_list.mmio = gen9_engine_mmio_list; //每次切换vgpu时，需要做save and restore
 	else
 		gvt->engine_mmio_list.mmio = gen8_engine_mmio_list;
 
 	for (mmio = gvt->engine_mmio_list.mmio;
 	     i915_mmio_reg_valid(mmio->reg); mmio++) {
-		if (mmio->in_context) {
-			gvt->engine_mmio_list.ctx_mmio_count[mmio->ring_id]++;
-			intel_gvt_mmio_set_in_ctx(gvt, mmio->reg.reg);
+		if (mmio->in_context) { //如果在context中，做一次初始化即可，后面由硬件来做save and restore
+			gvt->engine_mmio_list.ctx_mmio_count[mmio->ring_id]++; //如果不在context中，切换时，需要手动做save and restore
+			intel_gvt_mmio_set_in_ctx(gvt, mmio->reg.reg); 
 		}
 	}
 }

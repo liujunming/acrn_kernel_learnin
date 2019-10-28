@@ -3021,7 +3021,7 @@ void intel_gvt_clean_cmd_parser(struct intel_gvt *gvt)
 	clean_cmd_table(gvt);
 }
 
-int intel_gvt_init_cmd_parser(struct intel_gvt *gvt)
+int intel_gvt_init_cmd_parser(struct intel_gvt *gvt) //对gpu command做解析
 {
 	int ret;
 

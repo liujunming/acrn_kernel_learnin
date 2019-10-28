@@ -2850,8 +2850,8 @@ int intel_gvt_init_gtt(struct intel_gvt *gvt)
 
 	gvt_dbg_core("init gtt\n");
 
-	gvt->gtt.pte_ops = &gen8_gtt_pte_ops;
-	gvt->gtt.gma_ops = &gen8_gtt_gma_ops;
+	gvt->gtt.pte_ops = &gen8_gtt_pte_ops; //page table entry
+	gvt->gtt.gma_ops = &gen8_gtt_gma_ops; //graphic memory address
 
 	page = (void *)get_zeroed_page(GFP_KERNEL);
 	if (!page) {
@@ -2859,7 +2859,7 @@ int intel_gvt_init_gtt(struct intel_gvt *gvt)
 		return -ENOMEM;
 	}
 
-	daddr = dma_map_page(dev, virt_to_page(page), 0,
+	daddr = dma_map_page(dev, virt_to_page(page), 0, //为了gpu预取做准备，不设置scratch_page时，可能会出错
 			4096, PCI_DMA_BIDIRECTIONAL);
 	if (dma_mapping_error(dev, daddr)) {
 		gvt_err("fail to dmamap scratch ggtt page\n");

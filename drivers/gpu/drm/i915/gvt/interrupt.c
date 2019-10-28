@@ -708,13 +708,14 @@ int intel_gvt_init_irq(struct intel_gvt *gvt)
 	irq->irq_map = gen8_irq_map;
 
 	/* common event initialization */
-	init_events(irq);
+	init_events(irq); //指定handler为handle_default_event_virt
 
 	/* gen specific initialization */
 	irq->ops->init_irq(irq);
 
 	init_irq_map(irq);
 
+	//kvmgt中用到，因为kvm并没有使用物理显示器
 	hrtimer_init(&vblank_timer->timer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS);
 	vblank_timer->timer.function = vblank_timer_fn;
 	vblank_timer->period = VBLNAK_TIMER_PERIOD;

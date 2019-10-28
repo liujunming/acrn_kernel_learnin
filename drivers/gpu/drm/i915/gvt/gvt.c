@@ -276,7 +276,7 @@ static int gvt_service_thread(void *data)
 		if (WARN_ONCE(ret, "service thread is waken up by signal.\n"))
 			continue;
 
-		if (test_and_clear_bit(INTEL_GVT_REQUEST_EMULATE_VBLANK,
+		if (test_and_clear_bit(INTEL_GVT_REQUEST_EMULATE_VBLANK, //kvmgt使用
 					(void *)&gvt->service_request))
 			intel_gvt_emulate_vblank(gvt);
 
@@ -284,7 +284,7 @@ static int gvt_service_thread(void *data)
 				(void *)&gvt->service_request) ||
 			test_bit(INTEL_GVT_REQUEST_EVENT_SCHED,
 					(void *)&gvt->service_request)) {
-			intel_gvt_schedule(gvt);
+			intel_gvt_schedule(gvt); //调度，与schedule policy相关
 		}
 	}
 
@@ -300,7 +300,7 @@ static int init_service_thread(struct intel_gvt *gvt)
 {
 	init_waitqueue_head(&gvt->service_thread_wq);
 
-	gvt->service_thread = kthread_run(gvt_service_thread,
+	gvt->service_thread = kthread_run(gvt_service_thread, //与调度做配合
 			gvt, "gvt_service_thread");
 	if (IS_ERR(gvt->service_thread)) {
 		gvt_err("fail to start service thread.\n");
@@ -356,7 +356,7 @@ void intel_gvt_allocate_ddb(struct intel_gvt *gvt,
 	}
 }
 
-static int intel_gvt_init_vreg_pool(struct intel_gvt *gvt)
+static int intel_gvt_init_vreg_pool(struct intel_gvt *gvt) 
 {
 	int i = 0;
 	const struct intel_gvt_device_info *info = &gvt->device_info;
@@ -534,16 +534,16 @@ int intel_gvt_init_device(struct drm_i915_private *dev_priv)
 		goto out_clean_types;
 	}
 
-	intel_gvt_init_pipe_info(gvt);
+	intel_gvt_init_pipe_info(gvt); //acrngt独有，为了local display，这里存储着physical pipe信息
 
-	ret = intel_gvt_hypervisor_host_init(&dev_priv->drm.pdev->dev, gvt,
+	ret = intel_gvt_hypervisor_host_init(&dev_priv->drm.pdev->dev, gvt, //acrngt_host_init
 				&intel_gvt_ops);
 	if (ret) {
 		gvt_err("failed to register gvt-g host device: %d\n", ret);
 		goto out_clean_types;
 	}
 
-	vgpu = intel_gvt_create_idle_vgpu(gvt);
+	vgpu = intel_gvt_create_idle_vgpu(gvt); 
 	if (IS_ERR(vgpu)) {
 		ret = PTR_ERR(vgpu);
 		gvt_err("failed to create idle vgpu\n");
@@ -551,7 +551,7 @@ int intel_gvt_init_device(struct drm_i915_private *dev_priv)
 	}
 	gvt->idle_vgpu = vgpu;
 
-	ret = intel_gvt_init_vreg_pool(gvt);
+	ret = intel_gvt_init_vreg_pool(gvt); 
 	if (ret) {
 		gvt_err("failed to init vreg pool\n");
 		goto out_clean_vreg;

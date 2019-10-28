@@ -101,7 +101,7 @@ static int expose_firmware_sysfs(struct intel_gvt *gvt)
 	p = firmware + h->cfg_space_offset;
 
 	for (i = 0; i < h->cfg_space_size; i += 4)
-		pci_read_config_dword(pdev, i, p + i);
+		pci_read_config_dword(pdev, i, p + i); //pci配置空间
 
 	memcpy(gvt->firmware.cfg_space, p, info->cfg_space_size);
 
@@ -248,7 +248,7 @@ int intel_gvt_load_firmware(struct intel_gvt *gvt)
 	kfree(path);
 
 	if (ret)
-		goto expose_firmware;
+		goto expose_firmware; //一般情况下，都是找不到firmware，会跳转到expose_firmware
 
 	gvt_dbg_core("success.\n");
 

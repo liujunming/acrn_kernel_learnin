@@ -1915,32 +1915,32 @@ static int csfe_chicken1_mmio_write(struct intel_vgpu *vgpu,
 	return 0;
 }
 
-#define MMIO_F(reg, s, f, am, rm, d, r, w) do { \
+#define MMIO_F(reg, s, f, am, rm, d, r, w) do { \ //F代表full
 	ret = new_mmio_info(gvt, i915_mmio_reg_offset(reg), \
 		f, s, am, rm, d, r, w); \
 	if (ret) \
 		return ret; \
 } while (0)
 
-#define MMIO_D(reg, d) \
+#define MMIO_D(reg, d) \ //D代表device
 	MMIO_F(reg, 4, 0, 0, 0, d, NULL, NULL)
 
-#define MMIO_DH(reg, d, r, w) \
+#define MMIO_DH(reg, d, r, w) \ //D代表device，H指定handler
 	MMIO_F(reg, 4, 0, 0, 0, d, r, w)
 
-#define MMIO_DFH(reg, d, f, r, w) \
+#define MMIO_DFH(reg, d, f, r, w) \ //D代表device，F代表flag，H指定handler
 	MMIO_F(reg, 4, f, 0, 0, d, r, w)
 
-#define MMIO_GM(reg, d, r, w) \
+#define MMIO_GM(reg, d, r, w) \ //这个寄存器是graphic memory address。从mmio中进行访问
 	MMIO_F(reg, 4, F_GMADR, 0xFFFFF000, 0, d, r, w)
 
-#define MMIO_GM_RDR(reg, d, r, w) \
+#define MMIO_GM_RDR(reg, d, r, w) \ //既可以从mmio中进行访问，也可以从gpu command中访问
 	MMIO_F(reg, 4, F_GMADR | F_CMD_ACCESS, 0xFFFFF000, 0, d, r, w)
 
-#define MMIO_RO(reg, d, f, rm, r, w) \
+#define MMIO_RO(reg, d, f, rm, r, w) \ //RO代表read only
 	MMIO_F(reg, 4, F_RO | f, 0, rm, d, r, w)
 
-#define MMIO_RING_F(prefix, s, f, am, rm, d, r, w) do { \
+#define MMIO_RING_F(prefix, s, f, am, rm, d, r, w) do { \ //ring代表engine，gpu硬件由多个engine
 	MMIO_F(prefix(RENDER_RING_BASE), s, f, am, rm, d, r, w); \
 	MMIO_F(prefix(BLT_RING_BASE), s, f, am, rm, d, r, w); \
 	MMIO_F(prefix(GEN6_BSD_RING_BASE), s, f, am, rm, d, r, w); \
@@ -3560,12 +3560,12 @@ int intel_gvt_setup_mmio_info(struct intel_gvt *gvt)
 	if (!gvt->mmio.mmio_attribute)
 		return -ENOMEM;
 
-	ret = init_generic_mmio_info(gvt);
+	ret = init_generic_mmio_info(gvt); //通用的mmio
 	if (ret)
 		goto err;
 
 	if (IS_BROADWELL(dev_priv)) {
-		ret = init_broadwell_mmio_info(gvt);
+		ret = init_broadwell_mmio_info(gvt); //平台相关的mmio
 		if (ret)
 			goto err;
 	} else if (IS_SKYLAKE(dev_priv)

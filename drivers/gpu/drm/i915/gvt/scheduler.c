@@ -1217,7 +1217,7 @@ int intel_gvt_init_workload_scheduler(struct intel_gvt *gvt)
 		atomic_notifier_chain_register(&engine->context_status_notifier,
 					&gvt->shadow_ctx_notifier_block[i]);
 	}
-	INIT_WORK(&gvt->active_hp_work, active_hp_work);
+	INIT_WORK(&gvt->active_hp_work, active_hp_work); //hp:high performance 在gvt环境中，gpu执行前，cpu需要执行，从而会导致gpu的频率较低
 
 	return 0;
 err:
