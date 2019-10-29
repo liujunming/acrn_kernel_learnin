@@ -313,7 +313,7 @@ int intel_vgpu_init_mmio(struct intel_vgpu *vgpu)
 
 	BUILD_BUG_ON(sizeof(struct gvt_shared_page) != PAGE_SIZE);
 
-	vgpu->mmio.sreg = vzalloc(info->mmio_size);
+	vgpu->mmio.sreg = vzalloc(info->mmio_size); //目前已经不用了
 	vgpu->mmio.vreg = intel_gvt_allocate_vreg(vgpu);
 	if (!vgpu->mmio.vreg)
 		return -ENOMEM;

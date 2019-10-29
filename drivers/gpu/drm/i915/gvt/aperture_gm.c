@@ -61,7 +61,7 @@ static int alloc_gm(struct intel_vgpu *vgpu, bool high_gm)
 	}
 
 	mutex_lock(&dev_priv->drm.struct_mutex);
-	ret = i915_gem_gtt_insert(&dev_priv->ggtt.vm, node,
+	ret = i915_gem_gtt_insert(&dev_priv->ggtt.vm, node, //sos中将此段global graphics memory标为reserved
 				  size, I915_GTT_PAGE_SIZE,
 				  I915_COLOR_UNEVICTABLE,
 				  start, end, flags);
@@ -335,11 +335,11 @@ int intel_vgpu_alloc_resource(struct intel_vgpu *vgpu,
 {
 	int ret;
 
-	ret = alloc_resource(vgpu, param);
+	ret = alloc_resource(vgpu, param); //计算resource资源
 	if (ret)
 		return ret;
 
-	ret = alloc_vgpu_gm(vgpu);
+	ret = alloc_vgpu_gm(vgpu); //分配graphics memory
 	if (ret)
 		goto out_free_resource;
 

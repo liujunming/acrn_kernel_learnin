@@ -124,7 +124,7 @@ int intel_vgpu_emulate_cfg_read(struct intel_vgpu *vgpu, unsigned int offset,
 	return 0;
 }
 
-static int map_aperture(struct intel_vgpu *vgpu, bool map)
+static int map_aperture(struct intel_vgpu *vgpu, bool map) //map gfn to mfn ：ept mapping
 {
 	phys_addr_t aperture_pa = vgpu_aperture_pa_base(vgpu);
 	unsigned long aperture_sz = vgpu_aperture_sz(vgpu);
@@ -218,7 +218,7 @@ static int trap_gttmmio(struct intel_vgpu *vgpu, bool trap)
 	start &= ~GENMASK(3, 0);
 	end = start + vgpu->cfg_space.bar[INTEL_GVT_PCI_BAR_GTTMMIO].size - 1;
 
-	ret = intel_gvt_hypervisor_set_trap_area(vgpu, start, end, trap);
+	ret = intel_gvt_hypervisor_set_trap_area(vgpu, start, end, trap); //acrngt_set_trap_area
 	if (ret)
 		return ret;
 
@@ -292,7 +292,7 @@ static int emulate_pci_bar_write(struct intel_vgpu *vgpu, unsigned int offset,
 	if (new == 0xffffffff) {
 		switch (offset) {
 		case PCI_BASE_ADDRESS_0:
-		case PCI_BASE_ADDRESS_1:
+		case PCI_BASE_ADDRESS_1: //32位方式访问
 			size = ~(bars[INTEL_GVT_PCI_BAR_GTTMMIO].size -1);
 			intel_vgpu_write_pci_bar(vgpu, offset,
 						size >> (lo ? 0 : 32), lo);
@@ -423,7 +423,7 @@ int intel_vgpu_emulate_cfg_write(struct intel_vgpu *vgpu, unsigned int offset,
  * @primary: is the vGPU presented as primary
  *
  */
-void intel_vgpu_init_cfg_space(struct intel_vgpu *vgpu,
+void intel_vgpu_init_cfg_space(struct intel_vgpu *vgpu, //并未使用ACRN-DM中的pci 配置空间，而是使用此处在内核中分配的pci配置空间
 			       bool primary)
 {
 	struct intel_gvt *gvt = vgpu->gvt;

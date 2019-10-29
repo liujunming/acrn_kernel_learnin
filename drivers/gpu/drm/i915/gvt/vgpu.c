@@ -396,7 +396,7 @@ static struct intel_vgpu *__intel_gvt_create_vgpu(struct intel_gvt *gvt,
 	if (!vgpu)
 		return ERR_PTR(-ENOMEM);
 
-	ret = idr_alloc(&gvt->vgpu_idr, vgpu, IDLE_VGPU_IDR + 1, GVT_MAX_VGPU,
+	ret = idr_alloc(&gvt->vgpu_idr, vgpu, IDLE_VGPU_IDR + 1, GVT_MAX_VGPU, //vmid与vgpuid是相互独立的
 		GFP_KERNEL);
 	if (ret < 0)
 		goto out_free_vgpu;
@@ -430,7 +430,7 @@ static struct intel_vgpu *__intel_gvt_create_vgpu(struct intel_gvt *gvt,
 	if (ret)
 		goto out_detach_hypervisor_vgpu;
 
-	ret = intel_vgpu_init_opregion(vgpu);
+	ret = intel_vgpu_init_opregion(vgpu); //opregion本质上就是一段内存
 	if (ret)
 		goto out_clean_gtt;
 
@@ -450,7 +450,7 @@ static struct intel_vgpu *__intel_gvt_create_vgpu(struct intel_gvt *gvt,
 	if (ret)
 		goto out_clean_sched_policy;
 
-	ret = intel_gvt_hypervisor_set_opregion(vgpu);
+	ret = intel_gvt_hypervisor_set_opregion(vgpu); //acrngt_set_opregion，并未将gfn map到mfn
 	if (ret)
 		goto out_clean_sched_policy;
 

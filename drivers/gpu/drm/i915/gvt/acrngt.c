@@ -299,7 +299,7 @@ struct intel_vgpu *acrngt_instance_create(domid_t vm_id,
 	if (!intel_gvt_ops || !acrngt_priv.gvt)
 		return NULL;
 
-	vgpu = intel_gvt_ops->vgpu_create(acrngt_priv.gvt, vgpu_type);
+	vgpu = intel_gvt_ops->vgpu_create(acrngt_priv.gvt, vgpu_type); //intel_gvt_create_vgpu
 	if (IS_ERR(vgpu)) {
 		gvt_err("failed to create vgpu\n");
 		return NULL;
@@ -349,8 +349,8 @@ struct intel_vgpu *acrngt_instance_create(domid_t vm_id,
 		goto err;
 	}
 
-	/* trap config space access */
-	acrn_ioreq_intercept_bdf(info->client, 0, 2, 0);
+	/* trap config space access */ 
+	acrn_ioreq_intercept_bdf(info->client, 0, 2, 0); //不会给到ACRN-DM
 
 	thread = kthread_run(acrngt_emulation_thread, vgpu,
 			"acrngt_emulation:%d", vm_id);
@@ -520,7 +520,7 @@ static ssize_t acrngt_sysfs_instance_manage(struct kobject *kobj,
 	(void)sscanf(buf, "%63s", param_str);
 	param_cnt = sscanf(param_str, "%d,%d,%d,%d", &vp.vm_id,
 			&low_gm_sz, &high_gm_sz, &vp.fence_sz);
-	gvt_dbg_core("create vm-%d sysfs node, low gm size %d,"
+	gvt_dbg_core("create vm-%d sysfs node, low gm size %d," //low gm size指的是aperture
 		" high gm size %d, fence size %d\n",
 		vp.vm_id, low_gm_sz, high_gm_sz, vp.fence_sz);
 	vp.aperture_sz = low_gm_sz;
@@ -860,7 +860,7 @@ static int acrngt_set_pvmmio(unsigned long handle, u64 start, u64 end, bool map)
 {
 	int rc, i;
 	unsigned long mfn, shared_mfn;
-	unsigned long pfn = start >> PAGE_SHIFT;
+	unsigned long pfn = start >> PAGE_SHIFT; //pfn指的是guest的pfn，准确来说，应该是gfn
 	u32 mmio_size_fn = acrngt_priv.gvt->device_info.mmio_size >> PAGE_SHIFT;
 	struct acrngt_hvm_dev *info = (struct acrngt_hvm_dev *)handle;
 
@@ -899,14 +899,14 @@ static int acrngt_set_pvmmio(unsigned long handle, u64 start, u64 end, bool map)
 		}
 
 		/* scratch reg access is trapped like mmio access, 1 page */
-		rc = acrngt_map_gfn_to_mfn(handle, pfn + (VGT_PVINFO_PAGE >> PAGE_SHIFT),
+		rc = acrngt_map_gfn_to_mfn(handle, pfn + (VGT_PVINFO_PAGE >> PAGE_SHIFT), 
 					mfn + (VGT_PVINFO_PAGE >> PAGE_SHIFT), 1, 0);
 		if (rc) {
 			gvt_err("acrn-gvt: map pfn %lx to mfn %lx fail with ret %d\n",
 					pfn, mfn, rc);
 			return rc;
 		}
-		rc = acrn_ioreq_add_iorange(info->client, REQ_MMIO,
+		rc = acrn_ioreq_add_iorange(info->client, REQ_MMIO, //uos读写pvinfo page时，需要trap
 				(pfn << PAGE_SHIFT) + VGT_PVINFO_PAGE,
 				((pfn + 1) << PAGE_SHIFT) + VGT_PVINFO_PAGE - 1);
 		if (rc) {

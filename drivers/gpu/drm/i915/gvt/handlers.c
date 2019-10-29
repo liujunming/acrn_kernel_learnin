@@ -1224,7 +1224,7 @@ static int pvinfo_mmio_read(struct intel_vgpu *vgpu, unsigned int offset,
 	 * is in the first DWORD of shared_page.
 	 */
 	{
-		u32 reg = vgpu->mmio.shared_page->reg_addr;
+		u32 reg = vgpu->mmio.shared_page->reg_addr; //sos执行
 		struct intel_gvt_mmio_info *mmio;
 
 		mmio = find_mmio_info(vgpu->gvt, rounddown(reg, 4));
@@ -1318,7 +1318,7 @@ static int send_display_ready_uevent(struct intel_vgpu *vgpu, int ready)
 }
 
 #define INTEL_GVT_PCI_BAR_GTTMMIO 0
-int set_pvmmio(struct intel_vgpu *vgpu, bool map)
+int set_pvmmio(struct intel_vgpu *vgpu, bool map) //pvinfo: gvt给guest看到的一块虚拟寄存器，在真正的硬件中并不存在
 {
 	u64 start, end;
 	u64 val;
@@ -1333,11 +1333,11 @@ int set_pvmmio(struct intel_vgpu *vgpu, bool map)
 	start &= ~GENMASK(3, 0);
 	end = start + vgpu->cfg_space.bar[INTEL_GVT_PCI_BAR_GTTMMIO].size - 1;
 
-	ret = intel_gvt_hypervisor_set_pvmmio(vgpu, start, end, map);
+	ret = intel_gvt_hypervisor_set_pvmmio(vgpu, start, end, map); //acrngt_set_pvmmio
 	return ret;
 }
 
-static int pvinfo_mmio_write(struct intel_vgpu *vgpu, unsigned int offset,
+static int pvinfo_mmio_write(struct intel_vgpu *vgpu, unsigned int offset,  
 		void *p_data, unsigned int bytes)
 {
 	u32 data;

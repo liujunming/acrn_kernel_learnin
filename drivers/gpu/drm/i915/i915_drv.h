@@ -3665,7 +3665,7 @@ static inline uint##x##_t __raw_i915_read##x(const struct drm_i915_private *dev_
 					     i915_reg_t reg) \
 { \
 	if (!intel_vgpu_active(dev_priv) || !i915_modparams.enable_pvmmio || \
-		likely(!in_mmio_read_trap_list((reg).reg))) \
+		likely(!in_mmio_read_trap_list((reg).reg))) \ //更改了uos
 		return read##s(dev_priv->regs + i915_mmio_reg_offset(reg)); \
 	dev_priv->shared_page->reg_addr = i915_mmio_reg_offset(reg); \
 	return read##s(dev_priv->regs + i915_mmio_reg_offset(vgtif_reg(pv_mmio))); \
