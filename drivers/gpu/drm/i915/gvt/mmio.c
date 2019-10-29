@@ -105,7 +105,7 @@ int intel_vgpu_emulate_mmio_read(struct intel_vgpu *vgpu, uint64_t pa,
 	unsigned int offset = 0;
 	int ret = -EINVAL;
 
-	if (vgpu->failsafe) {
+	if (vgpu->failsafe) { //安全考虑
 		failsafe_emulate_mmio_rw(vgpu, pa, p_data, bytes, true);
 		return 0;
 	}

@@ -116,7 +116,7 @@ int intel_vgpu_emulate_cfg_read(struct intel_vgpu *vgpu, unsigned int offset,
 	if (rounddown(offset, 4) == INTEL_GVT_PCI_OPREGION) {
 		if (!vgpu_opregion(vgpu)->mapped) {
 			gvt_dbg_dpy("set up virtual opregion mapping\n");
-			map_vgpu_opregion(vgpu, true);
+			map_vgpu_opregion(vgpu, true); //完成opregion的ept映射
 		}
 	}
 
@@ -154,7 +154,7 @@ static int map_aperture(struct intel_vgpu *vgpu, bool map) //map gfn to mfn ：e
 	return 0;
 }
 
-int map_gttmmio(struct intel_vgpu *vgpu, bool map)
+int map_gttmmio(struct intel_vgpu *vgpu, bool map) //在gvt-g中，为uos存一个表，读写ggtt的时候都不会trap
 {
 	struct intel_vgpu_gm *gm = &vgpu->gm;
 	unsigned long mfn;
@@ -289,7 +289,7 @@ static int emulate_pci_bar_write(struct intel_vgpu *vgpu, unsigned int offset,
 	 * back. The device will return 0's in all don't-care
 	 * address bits.
 	 */
-	if (new == 0xffffffff) {
+	if (new == 0xffffffff) { //pci协议：写0xffffffff，可以获得bar的大小
 		switch (offset) {
 		case PCI_BASE_ADDRESS_0:
 		case PCI_BASE_ADDRESS_1: //32位方式访问
@@ -313,7 +313,7 @@ static int emulate_pci_bar_write(struct intel_vgpu *vgpu, unsigned int offset,
 			/* Unimplemented BARs */
 			intel_vgpu_write_pci_bar(vgpu, offset, 0x0, false);
 		}
-	} else {
+	} else { //真正的写入bar
 		switch (offset) {
 		case PCI_BASE_ADDRESS_0:
 		case PCI_BASE_ADDRESS_1:

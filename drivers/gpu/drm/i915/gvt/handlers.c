@@ -1362,7 +1362,7 @@ static int pvinfo_mmio_write(struct intel_vgpu *vgpu, unsigned int offset,
 				break;
 			}
 			if (vgpu_vreg(vgpu, offset) & PVMMIO_GGTT_UPDATE) {
-				ret = map_gttmmio(vgpu, true);
+				ret = map_gttmmio(vgpu, true); //将vgpu bar0的后8M映射到virtual ggtt对应的内存中
 				if (ret) {
 					DRM_INFO("ggtt pv mode is off\n");
 					vgpu_vreg(vgpu, offset) &=
@@ -3732,7 +3732,7 @@ int intel_vgpu_mmio_reg_rw(struct intel_vgpu *vgpu, unsigned int offset,
 	/*
 	 * Handle special MMIO blocks.
 	 */
-	mmio_block = find_mmio_block(gvt, offset);
+	mmio_block = find_mmio_block(gvt, offset); //大块的mmio读写，为了提升性能
 	if (mmio_block) {
 		func = is_read ? mmio_block->read : mmio_block->write;
 		if (func)

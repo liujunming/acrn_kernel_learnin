@@ -2387,7 +2387,7 @@ static int emulate_ggtt_mmio_write(struct intel_vgpu *vgpu, unsigned int off,
 	 * write, we assume the two 4 bytes writes are consecutive.
 	 * Otherwise, we abort and report error
 	 */
-	if (bytes < info->gtt_entry_size) {
+	if (bytes < info->gtt_entry_size) { //32位操作系统
 		if (ggtt_mm->ggtt_mm.last_partial_off == -1UL) {
 			/* the first partial part*/
 			ggtt_mm->ggtt_mm.last_partial_off = off;
@@ -2440,7 +2440,7 @@ static int emulate_ggtt_mmio_write(struct intel_vgpu *vgpu, unsigned int off,
 	}
 
 	if (ops->test_present(&e)) {
-		gfn = ops->get_pfn(&e);
+		gfn = ops->get_pfn(&e); //读gfn
 		m.val64 = e.val64;
 		m.type = e.type;
 
@@ -2453,7 +2453,7 @@ static int emulate_ggtt_mmio_write(struct intel_vgpu *vgpu, unsigned int off,
 		}
 
 		ret = intel_gvt_hypervisor_dma_map_guest_page(vgpu, gfn,
-							PAGE_SIZE, &dma_addr);
+							PAGE_SIZE, &dma_addr); //dma_addr >> PAGE_SHIFT为mfn
 		if (ret) {
 			gvt_vgpu_err("fail to populate guest ggtt entry\n");
 			/* guest driver may read/write the entry when partial
@@ -2471,9 +2471,9 @@ static int emulate_ggtt_mmio_write(struct intel_vgpu *vgpu, unsigned int off,
 	}
 
 out:
-	ggtt_set_host_entry(ggtt_mm, &m, g_gtt_index);
+	ggtt_set_host_entry(ggtt_mm, &m, g_gtt_index); //write to physical gtt
 	ggtt_invalidate(gvt->dev_priv);
-	ggtt_set_guest_entry(ggtt_mm, &e, g_gtt_index);
+	ggtt_set_guest_entry(ggtt_mm, &e, g_gtt_index); //write to uos virtual gtt
 	return 0;
 }
 
@@ -3351,7 +3351,7 @@ int intel_vgpu_g2v_pv_ggtt_insert(struct intel_vgpu *vgpu)
 	u64 num_entries = shared_page->pv_ggtt.length;
 	u32 cache_level = shared_page->pv_ggtt.cache_level;
 	u64 length = num_entries << PAGE_SHIFT;
-	u64 *vaddr = gtt->ggtt_mm->ggtt_mm.virtual_ggtt;
+	u64 *vaddr = gtt->ggtt_mm->ggtt_mm.virtual_ggtt; //virtual ggtt中存放着map_gttmmio映射的虚拟ggtt
 	u64 gtt_entry_index;
 	u64 gtt_entry;
 	unsigned long mfn;

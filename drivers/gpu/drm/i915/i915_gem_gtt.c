@@ -3034,7 +3034,7 @@ int i915_gem_init_ggtt(struct drm_i915_private *dev_priv)
 	struct drm_mm_node *entry;
 	int ret;
 
-	ret = intel_vgt_balloon(dev_priv);
+	ret = intel_vgt_balloon(dev_priv); //uos中运行
 	if (ret)
 		return ret;
 

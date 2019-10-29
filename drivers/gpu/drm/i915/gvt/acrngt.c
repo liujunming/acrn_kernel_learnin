@@ -180,14 +180,14 @@ static int acrngt_hvm_write_handler(struct intel_vgpu *vgpu, uint64_t pa,
 	return intel_gvt_ops->emulate_mmio_write(vgpu, pa, p_data, bytes);
 }
 
-static int acrngt_hvm_mmio_emulation(struct intel_vgpu *vgpu,
+static int acrngt_hvm_mmio_emulation(struct intel_vgpu *vgpu, //包含mmio与ggtt entry
 		struct vhm_request *req)
 {
 	if (req->reqs.mmio_request.direction == REQUEST_READ) {
 		/* MMIO READ */
 		gvt_dbg_core("handle mmio read emulation at address 0x%llx\n",
 			req->reqs.mmio_request.address);
-		if (intel_gvt_ops->emulate_mmio_read(vgpu,
+		if (intel_gvt_ops->emulate_mmio_read(vgpu, //intel_vgpu_emulate_mmio_read
 				req->reqs.mmio_request.address,
 				&req->reqs.mmio_request.value,
 				req->reqs.mmio_request.size)) {
