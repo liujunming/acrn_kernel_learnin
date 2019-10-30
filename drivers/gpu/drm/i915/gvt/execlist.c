@@ -326,7 +326,7 @@ static int emulate_execlist_schedule_in(struct intel_vgpu_execlist *execlist,
 		status.idle_to_active = 1;
 		status.context_id = 0;
 
-		emulate_csb_update(execlist, &status, false);
+		emulate_csb_update(execlist, &status, false); //context status buffer
 		return 0;
 	}
 

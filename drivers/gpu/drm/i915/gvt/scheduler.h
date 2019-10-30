@@ -86,21 +86,21 @@ struct intel_vgpu_workload {
 	int status;
 	unsigned int guilty_count;
 
-	struct intel_vgpu_mm *shadow_mm;
+	struct intel_vgpu_mm *shadow_mm; //ppgtt 维护的shadow page table指针
 
 	/* different submission model may need different handler */
 	int (*prepare)(struct intel_vgpu_workload *);
 	int (*complete)(struct intel_vgpu_workload *);
 	struct list_head list;
 
-	DECLARE_BITMAP(pending_events, INTEL_GVT_EVENT_MAX);
-	void *shadow_ring_buffer_va;
+	DECLARE_BITMAP(pending_events, INTEL_GVT_EVENT_MAX); //待注入的中断
+	void *shadow_ring_buffer_va; //guest的ring buffer做一份shadow的va
 
 	/* execlist context information */
 	struct execlist_ctx_descriptor_format ctx_desc;
 	struct execlist_ring_context *ring_context;
 	unsigned long rb_head, rb_tail, rb_ctl, rb_start, rb_len;
-	bool restore_inhibit;
+	bool restore_inhibit; //该context是否第一次提交
 	struct intel_vgpu_elsp_dwords elsp_dwords;
 	bool emulate_schedule_in;
 	atomic_t shadow_ctx_active;

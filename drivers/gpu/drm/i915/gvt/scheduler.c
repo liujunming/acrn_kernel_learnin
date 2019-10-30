@@ -122,7 +122,7 @@ static void sr_oa_regs(struct intel_vgpu_workload *workload,
 }
 
 static bool enable_lazy_shadow_ctx = true;
-static int populate_shadow_context(struct intel_vgpu_workload *workload)
+static int populate_shadow_context(struct intel_vgpu_workload *workload) //把guest的context image拷贝到shadow context中
 {
 	struct intel_vgpu *vgpu = workload->vgpu;
 	struct intel_gvt *gvt = vgpu->gvt;
@@ -179,7 +179,7 @@ static int populate_shadow_context(struct intel_vgpu_workload *workload)
 			intel_gvt_hypervisor_read_gpa(vgpu, context_gpa, dst,
 				I915_GTT_PAGE_SIZE);
 			kunmap(page);
-		} else {
+		} else { //优化
 			unsigned long mfn;
 			struct i915_gem_context *shadow_ctx =
 				workload->vgpu->submission.shadow_ctx;
@@ -392,7 +392,7 @@ static int copy_workload_to_ring_buffer(struct intel_vgpu_workload *workload)
 	/* get shadow ring buffer va */
 	workload->shadow_ring_buffer_va = cs;
 
-	memcpy(cs, shadow_ring_buffer_va,
+	memcpy(cs, shadow_ring_buffer_va, //gpu真正执行的是cs中的内容
 			workload->rb_len);
 
 	cs += workload->rb_len / sizeof(u32);
@@ -466,7 +466,7 @@ int intel_gvt_scan_and_shadow_workload(struct intel_vgpu_workload *workload)
 			goto err_shadow;
 	}
 
-	rq = i915_request_alloc(engine, shadow_ctx);
+	rq = i915_request_alloc(engine, shadow_ctx); //有了i915 request，才能提交到真正的硬件上
 	if (IS_ERR(rq)) {
 		gvt_vgpu_err("fail to allocate gem request\n");
 		ret = PTR_ERR(rq);
@@ -745,7 +745,7 @@ static int prepare_workload(struct intel_vgpu_workload *workload)
 	}
 
 	if (workload->prepare) {
-		ret = workload->prepare(workload);
+		ret = workload->prepare(workload); //prepare_execlist_workload
 		if (ret)
 			goto err_shadow_wa_ctx;
 	}
@@ -774,7 +774,7 @@ static int dispatch_workload(struct intel_vgpu_workload *workload)
 	mutex_lock(&vgpu->vgpu_lock);
 	mutex_lock(&dev_priv->drm.struct_mutex);
 
-	ret = intel_gvt_scan_and_shadow_workload(workload);
+	ret = intel_gvt_scan_and_shadow_workload(workload); //有的workload submit时做shadow，有的workload dispatch时做shadow
 	if (ret)
 		goto out;
 
@@ -790,7 +790,7 @@ out:
 				ring_id, workload->req);
 		s->shadow_ctx->sched.priority = i915_modparams.gvt_workload_priority =
 			sanitize_priority(i915_modparams.gvt_workload_priority);
-		i915_request_add(workload->req);
+		i915_request_add(workload->req); //真正地将其交给了i915
 		workload->dispatched = true;
 	}
 
@@ -855,7 +855,7 @@ out:
 	return workload;
 }
 
-static void update_guest_context(struct intel_vgpu_workload *workload)
+static void update_guest_context(struct intel_vgpu_workload *workload) //与populate_shadow_context配合使用
 {
 	struct i915_request *rq = workload->req;
 	struct intel_vgpu *vgpu = workload->vgpu;
@@ -977,7 +977,7 @@ static void complete_current_workload(struct intel_gvt *gvt, int ring_id)
 
 		if (!workload->status && !(vgpu->resetting_eng &
 					   ENGINE_MASK(ring_id))) {
-			update_guest_context(workload);
+			update_guest_context(workload); //让guest context与真正的硬件保持一致
 
 			for_each_set_bit(event, workload->pending_events,
 					 INTEL_GVT_EVENT_MAX)
@@ -1025,7 +1025,7 @@ static void complete_current_workload(struct intel_gvt *gvt, int ring_id)
 		intel_vgpu_clean_workloads(vgpu, ENGINE_MASK(ring_id));
 	}
 
-	workload->complete(workload);
+	workload->complete(workload); //complete_execlist_workload
 
 	atomic_dec(&s->running_workload_num);
 	wake_up(&scheduler->workload_complete_wq);
@@ -1502,7 +1502,7 @@ intel_vgpu_create_workload(struct intel_vgpu *vgpu, int ring_id,
 	head &= RB_HEAD_OFF_MASK;
 	tail &= RB_TAIL_OFF_MASK;
 
-	if (last_workload && same_context(&last_workload->ctx_desc, desc)) {
+	if (last_workload && same_context(&last_workload->ctx_desc, desc)) { //light restore or lite-restore
 		gvt_dbg_el("ring id %d cur workload == last\n", ring_id);
 		gvt_dbg_el("ctx head %x real head %lx\n", head,
 				last_workload->rb_tail);
@@ -1535,7 +1535,7 @@ intel_vgpu_create_workload(struct intel_vgpu *vgpu, int ring_id,
 	workload->rb_start = start;
 	workload->rb_ctl = ctl;
 
-	if (ring_id == RCS) {
+	if (ring_id == RCS) { //batch buffer相关的workaround context
 		intel_gvt_hypervisor_read_gpa(vgpu, ring_context_gpa +
 			RING_CTX_OFF(bb_per_ctx_ptr.val), &per_ctx, 4);
 		intel_gvt_hypervisor_read_gpa(vgpu, ring_context_gpa +
@@ -1582,7 +1582,7 @@ intel_vgpu_create_workload(struct intel_vgpu *vgpu, int ring_id,
 }
 
 /**
- * intel_vgpu_queue_workload - Qeue a vGPU workload
+ * intel_vgpu_queue_workload - Queue a vGPU workload
  * @workload: the workload to queue in
  */
 void intel_vgpu_queue_workload(struct intel_vgpu_workload *workload)
@@ -1590,5 +1590,5 @@ void intel_vgpu_queue_workload(struct intel_vgpu_workload *workload)
 	list_add_tail(&workload->list,
 		workload_q_head(workload->vgpu, workload->ring_id));
 	intel_gvt_kick_schedule(workload->vgpu->gvt);
-	wake_up(&workload->vgpu->gvt->scheduler.waitq[workload->ring_id]);
+	wake_up(&workload->vgpu->gvt->scheduler.waitq[workload->ring_id]); //与workload_thread的add_wait_queue(&scheduler->waitq[ring_id], &wait)进行交互
 }

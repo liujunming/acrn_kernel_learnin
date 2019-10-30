@@ -2810,7 +2810,7 @@ static int shadow_workload_ring_buffer(struct intel_vgpu_workload *workload)
 	shadow_ring_buffer_va = s->ring_scan_buffer[ring_id];
 
 	/* get shadow ring buffer va */
-	workload->shadow_ring_buffer_va = shadow_ring_buffer_va;
+	workload->shadow_ring_buffer_va = shadow_ring_buffer_va; //guest的ring buffer做一份shadow的va(virtual address)
 
 	/* head > tail --> copy head <-> top */
 	if (gma_head > gma_tail) {
@@ -2834,7 +2834,7 @@ static int shadow_workload_ring_buffer(struct intel_vgpu_workload *workload)
 	return 0;
 }
 
-int intel_gvt_scan_and_shadow_ringbuffer(struct intel_vgpu_workload *workload)
+int intel_gvt_scan_and_shadow_ringbuffer(struct intel_vgpu_workload *workload) //先shadow，后scan
 {
 	int ret;
 	struct intel_vgpu *vgpu = workload->vgpu;

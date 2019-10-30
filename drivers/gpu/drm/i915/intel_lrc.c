@@ -488,7 +488,7 @@ static void execlists_submit_ports(struct intel_engine_cs *engine)
 	 * currently ensured by the fact that we always write the same number
 	 * of elsq entries, keep this in mind before changing the loop below.
 	 */
-	for (n = execlists_num_ports(execlists); n--; ) {
+	for (n = execlists_num_ports(execlists); n--; ) { //实际是两个port
 		struct i915_request *rq;
 		unsigned int count;
 		u64 desc;

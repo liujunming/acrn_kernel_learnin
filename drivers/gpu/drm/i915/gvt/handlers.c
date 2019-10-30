@@ -2846,7 +2846,7 @@ static int init_broadwell_mmio_info(struct intel_gvt *gvt)
 		ring_reset_ctl_write);
 #undef RING_REG
 
-#define RING_REG(base) _MMIO((base) + 0x230)
+#define RING_REG(base) _MMIO((base) + 0x230) //gfx驱动向0x230 port写四个DWORD(4个字节)
 	MMIO_RING_DFH(RING_REG, D_BDW_PLUS, 0, NULL, elsp_mmio_write);
 #undef RING_REG
 
