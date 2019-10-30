@@ -567,7 +567,7 @@ static void _ppgtt_get_root_entry(struct intel_vgpu_mm *mm,
 	GEM_BUG_ON(mm->type != INTEL_GVT_MM_PPGTT);
 
 	entry->type = mm->ppgtt_mm.root_entry_type;
-	pte_ops->get_entry(guest ? mm->ppgtt_mm.guest_pdps :
+	pte_ops->get_entry(guest ? mm->ppgtt_mm.guest_pdps : //gen8_gtt_pte_ops -> gtt_get_entry64
 			   mm->ppgtt_mm.shadow_pdps,
 			   entry, index, false, 0, mm->vgpu);
 	update_entry_type_for_real(pte_ops, entry, false);
@@ -887,7 +887,7 @@ static struct intel_vgpu_ppgtt_spt *ppgtt_alloc_spt_gfn(
 	 * Init guest_page.
 	 */
 	ret = intel_vgpu_register_page_track(vgpu, gfn,
-			ppgtt_write_protection_handler, spt);
+			ppgtt_write_protection_handler, spt); //写保护
 	if (ret) {
 		ppgtt_free_spt(spt);
 		return ERR_PTR(ret);
@@ -1094,7 +1094,7 @@ static struct intel_vgpu_ppgtt_spt *ppgtt_populate_spt_by_guest_entry(
 			goto err;
 		}
 
-		ret = intel_vgpu_enable_page_track(vgpu, spt->guest_page.gfn);
+		ret = intel_vgpu_enable_page_track(vgpu, spt->guest_page.gfn); //写保护
 		if (ret)
 			goto err_free_spt;
 
@@ -1299,7 +1299,7 @@ static int ppgtt_populate_spt(struct intel_vgpu_ppgtt_spt *spt)
 	for_each_present_guest_entry(spt, &ge, i) {
 		if (gtt_type_is_pt(get_next_pt_type(ge.type))) {
 			vgpu->ge_cache_enable = false;
-			s = ppgtt_populate_spt_by_guest_entry(vgpu, &ge);
+			s = ppgtt_populate_spt_by_guest_entry(vgpu, &ge); //递归调用
 			if (IS_ERR(s)) {
 				ret = PTR_ERR(s);
 				goto fail;
@@ -1307,7 +1307,7 @@ static int ppgtt_populate_spt(struct intel_vgpu_ppgtt_spt *spt)
 			ppgtt_get_shadow_entry(spt, &se, i);
 			ppgtt_generate_shadow_entry(&se, s, &ge);
 			ppgtt_set_shadow_entry(spt, &se, i);
-		} else {
+		} else { //最后一级
 			gfn = ops->get_pfn(&ge);
 			if (!intel_gvt_hypervisor_is_valid_gfn(vgpu, gfn)) {
 				ops->set_pfn(&se, gvt->gtt.scratch_mfn);
@@ -1543,7 +1543,7 @@ static int ppgtt_set_guest_page_oos(struct intel_vgpu_ppgtt_spt *spt)
 			 spt, spt->guest_page.type);
 
 	list_add_tail(&oos_page->vm_list, &spt->vgpu->gtt.oos_page_list_head);
-	return intel_vgpu_disable_page_track(spt->vgpu, spt->guest_page.gfn);
+	return intel_vgpu_disable_page_track(spt->vgpu, spt->guest_page.gfn); //取消写保护
 }
 
 /**
@@ -1707,7 +1707,7 @@ static int ppgtt_handle_guest_write_page_table(
 			goto fail;
 	}
 
-	ret = ppgtt_handle_guest_entry_removal(spt, &old_se, index);
+	ret = ppgtt_handle_guest_entry_removal(spt, &old_se, index); //删掉旧的页表，由于是多级页表，所以里面有递归调用
 	if (ret)
 		goto fail;
 
@@ -1813,7 +1813,7 @@ static int ppgtt_handle_guest_write_page_table_bytes(
 	index = (pa & (PAGE_SIZE - 1)) >> info->gtt_entry_size_shift;
 
 	/* Set guest ppgtt entry. Optional for KVMGT, but MUST for XENGT. */
-	intel_gvt_hypervisor_write_gpa(vgpu, pa, p_data, bytes);
+	intel_gvt_hypervisor_write_gpa(vgpu, pa, p_data, bytes); //kvm使用了page track，已经保证了写入
 	ppgtt_get_guest_entry(spt, &we, index);
 
 	/*
@@ -1832,7 +1832,7 @@ static int ppgtt_handle_guest_write_page_table_bytes(
 		ret = ppgtt_handle_guest_write_page_table(spt, &we, index);
 		if (ret)
 			return ret;
-	} else {
+	} else { //uos是32位系统
 		if (!test_bit(index, spt->post_shadow_bitmap)) {
 			int type = spt->shadow_page.type;
 
@@ -1843,10 +1843,10 @@ static int ppgtt_handle_guest_write_page_table_bytes(
 			ops->set_pfn(&se, vgpu->gtt.scratch_pt[type].page_mfn);
 			ppgtt_set_shadow_entry(spt, &se, index);
 		}
-		ppgtt_set_post_shadow(spt, index);
+		ppgtt_set_post_shadow(spt, index); //intel_vgpu_flush_post_shadow
 	}
 
-	if (!enable_out_of_sync)
+	if (!enable_out_of_sync) //优化
 		return 0;
 
 	spt->guest_page.write_cnt++;
@@ -1855,11 +1855,11 @@ static int ppgtt_handle_guest_write_page_table_bytes(
 		ops->set_entry(spt->guest_page.oos_page->mem, &we, index,
 				false, 0, vgpu);
 
-	if (can_do_out_of_sync(spt)) {
+	if (can_do_out_of_sync(spt)) { //只针对最后一级页表
 		if (!spt->guest_page.oos_page)
 			ppgtt_allocate_oos_page(spt);
 
-		ret = ppgtt_set_guest_page_oos(spt);
+		ret = ppgtt_set_guest_page_oos(spt);  //prepare_workload    -> intel_vgpu_sync_oos_pages同步oos page
 		if (ret < 0)
 			return ret;
 	}
@@ -1960,8 +1960,8 @@ static int shadow_ppgtt_mm(struct intel_vgpu_mm *mm)
 	struct intel_gvt *gvt = vgpu->gvt;
 	struct intel_gvt_gtt *gtt = &gvt->gtt;
 	struct intel_gvt_gtt_pte_ops *ops = gtt->pte_ops;
-	struct intel_vgpu_ppgtt_spt *spt;
-	struct intel_gvt_gtt_entry ge, se;
+	struct intel_vgpu_ppgtt_spt *spt; //shadow page table
+	struct intel_gvt_gtt_entry ge, se; //guest entry, shadow entry，这里的root pointer不仅包含地址，还做了类型等内容的封装，目的是与intel_gvt_gtt_pte_ops匹配
 	int index, ret;
 
 	if (mm->ppgtt_mm.shadowed)

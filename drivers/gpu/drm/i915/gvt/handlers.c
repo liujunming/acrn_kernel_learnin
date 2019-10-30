@@ -1258,6 +1258,7 @@ static int pvinfo_mmio_read(struct intel_vgpu *vgpu, unsigned int offset,
 	return ret;
 }
 
+//g2v: guest to vgpu device model
 static int handle_g2v_notification(struct intel_vgpu *vgpu, int notification)
 {
 	intel_gvt_gtt_type_t root_entry_type = GTT_TYPE_PPGTT_ROOT_L4_ENTRY;

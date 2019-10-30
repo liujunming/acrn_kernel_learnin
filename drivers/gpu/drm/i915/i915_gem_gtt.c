@@ -1355,7 +1355,7 @@ static int gen8_ppgtt_notify_vgt(struct i915_hw_ppgtt *ppgtt, bool create)
 		I915_WRITE(vgtif_reg(pdp[0].lo), lower_32_bits(daddr));
 		I915_WRITE(vgtif_reg(pdp[0].hi), upper_32_bits(daddr));
 
-		msg = (create ? VGT_G2V_PPGTT_L4_PAGE_TABLE_CREATE :
+		msg = (create ? VGT_G2V_PPGTT_L4_PAGE_TABLE_CREATE : //与handle_g2v_notification相呼应
 				VGT_G2V_PPGTT_L4_PAGE_TABLE_DESTROY);
 	} else {
 		for (i = 0; i < GEN8_3LVL_PDPES; i++) {
@@ -1753,7 +1753,7 @@ static struct i915_hw_ppgtt *gen8_ppgtt_create(struct drm_i915_private *i915)
 		ppgtt->vm.clear_range = gen8_ppgtt_clear_3lvl;
 	}
 
-	if (intel_vgpu_active(i915))
+	if (intel_vgpu_active(i915)) //uos
 		gen8_ppgtt_notify_vgt(ppgtt, true);
 
 	ppgtt->vm.cleanup = gen8_ppgtt_cleanup;
