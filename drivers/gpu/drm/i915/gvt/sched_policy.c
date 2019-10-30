@@ -90,7 +90,7 @@ static void vgpu_update_timeslice(struct intel_vgpu *vgpu, ktime_t cur_time)
 #define GVT_TS_BALANCE_PERIOD_MS 100
 #define GVT_TS_BALANCE_STAGE_NUM 10
 
-static void gvt_balance_timeslice(struct gvt_sched_data *sched_data)
+static void gvt_balance_timeslice(struct gvt_sched_data *sched_data) //平均
 {
 	struct vgpu_sched_data *vgpu_data;
 	struct list_head *pos;
@@ -149,7 +149,7 @@ static void try_to_schedule_next_vgpu(struct intel_gvt *gvt)
 	 * after the flag is set, workload dispatch thread will
 	 * stop dispatching workload for current vgpu
 	 */
-	scheduler->need_reschedule = true;
+	scheduler->need_reschedule = true; //pick_next_workload complete_current_workload
 
 	/* still have uncompleted workload? */
 	for_each_engine(engine, gvt->dev_priv, i) {
@@ -170,7 +170,7 @@ static void try_to_schedule_next_vgpu(struct intel_gvt *gvt)
 
 	/* wake up workload dispatch thread */
 	for_each_engine(engine, gvt->dev_priv, i)
-		wake_up(&scheduler->waitq[i]);
+		wake_up(&scheduler->waitq[i]); //workload_thread add_wait_queue
 }
 
 static struct intel_vgpu *find_busy_vgpu(struct gvt_sched_data *sched_data)
@@ -208,7 +208,7 @@ static struct intel_vgpu *find_busy_vgpu(struct gvt_sched_data *sched_data)
 /* in nanosecond */
 #define GVT_DEFAULT_TIME_SLICE 1000000
 
-static void tbs_sched_func(struct gvt_sched_data *sched_data)
+static void tbs_sched_func(struct gvt_sched_data *sched_data) //真正做调度的地方
 {
 	struct intel_gvt *gvt = sched_data->gvt;
 	struct intel_gvt_workload_scheduler *scheduler = &gvt->scheduler;
@@ -230,7 +230,7 @@ static void tbs_sched_func(struct gvt_sched_data *sched_data)
 				      &sched_data->lru_runq_head);
 		}
 	} else {
-		scheduler->next_vgpu = gvt->idle_vgpu;
+		scheduler->next_vgpu = gvt->idle_vgpu; //idle vgpu
 	}
 out:
 	if (scheduler->next_vgpu)
@@ -267,7 +267,7 @@ static enum hrtimer_restart tbs_timer_fn(struct hrtimer *timer_data)
 
 	data = container_of(timer_data, struct gvt_sched_data, timer);
 
-	intel_gvt_request_service(data->gvt, INTEL_GVT_REQUEST_SCHED);
+	intel_gvt_request_service(data->gvt, INTEL_GVT_REQUEST_SCHED); //gvt_service_thread -> test_bit(INTEL_GVT_REQUEST_SCHED
 
 	hrtimer_add_expires_ns(&data->timer, data->period);
 
@@ -316,7 +316,7 @@ static int tbs_sched_init_vgpu(struct intel_vgpu *vgpu)
 	if (!data)
 		return -ENOMEM;
 
-	data->sched_ctl.weight = vgpu->sched_ctl.weight;
+	data->sched_ctl.weight = vgpu->sched_ctl.weight; //gpu的权重
 	data->vgpu = vgpu;
 	INIT_LIST_HEAD(&data->lru_list);
 
@@ -355,7 +355,7 @@ static void tbs_sched_start_schedule(struct intel_vgpu *vgpu)
 	list_add(&vgpu_data->lru_list, &sched_data->lru_runq_head);
 
 	if (!hrtimer_active(&sched_data->timer))
-		hrtimer_start(&sched_data->timer, ktime_add_ns(ktime_get(),
+		hrtimer_start(&sched_data->timer, ktime_add_ns(ktime_get(), //tbs_timer_fn
 			sched_data->period), HRTIMER_MODE_ABS);
 	vgpu_data->active = true;
 }
@@ -428,7 +428,7 @@ void intel_vgpu_start_schedule(struct intel_vgpu *vgpu)
 	mutex_lock(&vgpu->gvt->sched_lock);
 	if (!vgpu_data->active) {
 		gvt_dbg_core("vgpu%d: start schedule\n", vgpu->id);
-		vgpu->gvt->scheduler.sched_ops->start_schedule(vgpu);
+		vgpu->gvt->scheduler.sched_ops->start_schedule(vgpu); //tbs_sched_start_schedule
 	}
 	mutex_unlock(&vgpu->gvt->sched_lock);
 }

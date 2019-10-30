@@ -1907,7 +1907,7 @@ static void enable_execlists(struct intel_engine_cs *engine)
 			   _MASKED_BIT_DISABLE(GEN11_GFX_DISABLE_LEGACY_MODE));
 	else
 		I915_WRITE(RING_MODE_GEN7(engine),
-			   _MASKED_BIT_ENABLE(GFX_RUN_LIST_ENABLE));
+			   _MASKED_BIT_ENABLE(GFX_RUN_LIST_ENABLE)); //写入RING MODE  -> ring_mode_mmio_write
 
 	I915_WRITE(RING_MI_MODE(engine->mmio_base),
 		   _MASKED_BIT_DISABLE(STOP_RING));

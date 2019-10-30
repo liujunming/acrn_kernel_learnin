@@ -1847,7 +1847,7 @@ static int ring_mode_mmio_write(struct intel_vgpu *vgpu, unsigned int offset,
 		if (ret)
 			return ret;
 
-		intel_vgpu_start_schedule(vgpu);
+		intel_vgpu_start_schedule(vgpu); //调度
 	}
 	return 0;
 }
