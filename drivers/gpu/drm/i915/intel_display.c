@@ -12506,7 +12506,7 @@ static void intel_update_crtc(struct drm_crtc *crtc,
 	if (new_plane_state)
 		intel_fbc_enable(intel_crtc, pipe_config, new_plane_state);
 
-	drm_atomic_helper_commit_planes_on_crtc(old_crtc_state);
+	drm_atomic_helper_commit_planes_on_crtc(old_crtc_state); //将crtc中需要显示的plane做显示
 }
 
 static void intel_update_crtcs(struct drm_atomic_state *state)

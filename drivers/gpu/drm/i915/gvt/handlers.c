@@ -2291,7 +2291,7 @@ static int init_generic_mmio_info(struct intel_gvt *gvt)
 	MMIO_D(_MMIO(0x48268), D_ALL);
 
 	MMIO_F(PCH_GMBUS0, 4 * 4, 0, 0, 0, D_ALL, gmbus_mmio_read,
-		gmbus_mmio_write);
+		gmbus_mmio_write); //获取edid信息
 	MMIO_F(PCH_GPIOA, 6 * 4, F_UNALIGN, 0, 0, D_ALL, NULL, NULL);
 	MMIO_F(_MMIO(0xe4f00), 0x28, 0, 0, 0, D_ALL, NULL, NULL);
 
@@ -2994,7 +2994,7 @@ static int skl_plane_mmio_write(struct intel_vgpu *vgpu, unsigned int offset,
 	write_vreg(vgpu, offset, p_data, bytes);
 	if ((vgpu_vreg_t(vgpu, PIPECONF(pipe)) & I965_PIPECONF_ACTIVE) &&
 			(vgpu->gvt->pipe_info[pipe].plane_owner[plane] == vgpu->id)) {
-		I915_WRITE(_MMIO(offset), vgpu_vreg(vgpu, offset));
+		I915_WRITE(_MMIO(offset), vgpu_vreg(vgpu, offset)); //将寄存器写到真正的硬件上
 	}
 	return 0;
 }
@@ -3192,7 +3192,7 @@ static int init_skl_mmio_info(struct intel_gvt *gvt)
 	MMIO_PLANES_DH(PLANE_KEYVAL, D_SKL_PLUS, NULL, skl_plane_mmio_write);
 	MMIO_PLANES_DH(PLANE_KEYMSK, D_SKL_PLUS, NULL, skl_plane_mmio_write);
 
-	MMIO_PLANES_DH(PLANE_SURF, D_SKL_PLUS, NULL, skl_plane_surf_write);
+	MMIO_PLANES_DH(PLANE_SURF, D_SKL_PLUS, NULL, skl_plane_surf_write); //写surface寄存器
 
 	MMIO_PLANES_DH(PLANE_KEYMAX, D_SKL_PLUS, NULL, skl_plane_mmio_write);
 	MMIO_PLANES_DH(PLANE_OFFSET, D_SKL_PLUS, NULL, skl_plane_mmio_write);

@@ -532,7 +532,7 @@ void intel_gvt_init_pipe_info(struct intel_gvt *gvt)
 
 bool gvt_emulate_hdmi = false;
 
-int setup_virtual_monitors(struct intel_vgpu *vgpu)
+int setup_virtual_monitors(struct intel_vgpu *vgpu) //vgpu创建时调用
 {
 	struct intel_connector *connector = NULL;
 	struct drm_connector_list_iter conn_iter;
@@ -547,11 +547,11 @@ int setup_virtual_monitors(struct intel_vgpu *vgpu)
 	if (IS_BROXTON(dev_priv))
 		port = PORT_A;
 
-	drm_connector_list_iter_begin(&vgpu->gvt->dev_priv->drm, &conn_iter);
+	drm_connector_list_iter_begin(&vgpu->gvt->dev_priv->drm, &conn_iter); //monitor
 	for_each_intel_connector_iter(connector, &conn_iter) {
 		if (connector->encoder->get_hw_state(connector->encoder, &pipe)) {
 			/* if no planes are allocated for this pipe, skip it */
-			if (i915_modparams.avail_planes_per_pipe &&
+			if (i915_modparams.avail_planes_per_pipe && 
 			    !bxt_check_planes(vgpu, pipe))
 				continue;
 
@@ -566,8 +566,8 @@ int setup_virtual_monitors(struct intel_vgpu *vgpu)
 
 			/* Get (Dom0) port associated with current pipe. */
 			port = connector->encoder->port;
-			ret = setup_virtual_monitor(vgpu, port,
-				type, 0, edid, !gvt_emulate_hdmi);
+			ret = setup_virtual_monitor(vgpu, port, //sos与uos看到的monitor数量一样
+				type, 0, edid, !gvt_emulate_hdmi); //uos看到的pipe是物理pipe
 			if (ret)
 				return ret;
 			type++;

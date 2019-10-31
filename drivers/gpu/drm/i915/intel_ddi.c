@@ -3545,7 +3545,7 @@ void intel_ddi_init(struct drm_i915_private *dev_priv, enum port port)
 	 * For port A check whether vgpu is active and we have a monitor
 	 * attached to port A.
 	 * */
-	init_hdmi = (intel_vgpu_active(dev_priv) && port == PORT_A &&
+	init_hdmi = (intel_vgpu_active(dev_priv) && port == PORT_A && //从vbt查询，当前port是支持hdmi or dp
 			(I915_READ(GEN8_DE_PORT_ISR) & BXT_DE_PORT_HP_DDIA)) ||
 			(dev_priv->vbt.ddi_port_info[port].supports_dvi ||
 		     dev_priv->vbt.ddi_port_info[port].supports_hdmi);
@@ -3577,7 +3577,7 @@ void intel_ddi_init(struct drm_i915_private *dev_priv, enum port port)
 	intel_encoder = &intel_dig_port->base;
 	encoder = &intel_encoder->base;
 
-	drm_encoder_init(&dev_priv->drm, encoder, &intel_ddi_funcs,
+	drm_encoder_init(&dev_priv->drm, encoder, &intel_ddi_funcs, //初始化encoder
 			 DRM_MODE_ENCODER_TMDS, "DDI %c", port_name(port));
 
 	intel_encoder->hotplug = intel_ddi_hotplug;
@@ -3640,7 +3640,7 @@ void intel_ddi_init(struct drm_i915_private *dev_priv, enum port port)
 	intel_infoframe_init(intel_dig_port);
 
 	if (init_dp) {
-		if (!intel_ddi_init_dp_connector(intel_dig_port))
+		if (!intel_ddi_init_dp_connector(intel_dig_port)) //初始化connector
 			goto err;
 
 		intel_dig_port->hpd_pulse = intel_dp_hpd_pulse;
@@ -3650,7 +3650,7 @@ void intel_ddi_init(struct drm_i915_private *dev_priv, enum port port)
 	 * case we have some really bad VBTs... */
 	if ((intel_vgpu_active(dev_priv) && IS_BROXTON(dev_priv)) ||
 		(intel_encoder->type != INTEL_OUTPUT_EDP && init_hdmi)) {
-		if (!intel_ddi_init_hdmi_connector(intel_dig_port))
+		if (!intel_ddi_init_hdmi_connector(intel_dig_port)) //初始化connector
 			goto err;
 	}
 

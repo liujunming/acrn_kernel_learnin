@@ -415,7 +415,7 @@ static void propagate_event(struct intel_gvt_irq *irq,
 	if (!test_bit(bit, (void *)&vgpu_vreg(vgpu,
 					regbase_to_imr(reg_base)))) {
 		trace_propagate_event(vgpu->id, irq_name[event], bit);
-		set_bit(bit, (void *)&vgpu_vreg(vgpu,
+		set_bit(bit, (void *)&vgpu_vreg(vgpu, //设置iir寄存器对应的bit
 					regbase_to_iir(reg_base)));
 	}
 }
@@ -475,7 +475,7 @@ static void gen8_check_pending_irq(struct intel_vgpu *vgpu)
 		struct intel_gvt_irq_info *info = irq->info[i];
 		u32 reg_base;
 
-		if (!info->has_upstream_irq)
+		if (!info->has_upstream_irq) //irq分层：最上层是master irq
 			continue;
 
 		reg_base = i915_mmio_reg_offset(info->reg_base);

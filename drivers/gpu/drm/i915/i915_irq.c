@@ -2755,7 +2755,7 @@ static void gen11_hpd_irq_handler(struct drm_i915_private *dev_priv, u32 iir)
 }
 
 static irqreturn_t
-gen8_de_irq_handler(struct drm_i915_private *dev_priv, u32 master_ctl)
+gen8_de_irq_handler(struct drm_i915_private *dev_priv, u32 master_ctl) //de:display engine
 {
 	irqreturn_t ret = IRQ_NONE;
 	u32 iir;
@@ -2872,10 +2872,10 @@ gen8_de_irq_handler(struct drm_i915_private *dev_priv, u32 master_ctl)
 		I915_WRITE(GEN8_DE_PIPE_IIR(pipe), iir);
 
 		crtc = intel_get_crtc_for_pipe(dev_priv, pipe);
-		if (iir & GEN8_PIPE_VBLANK) {
+		if (iir & GEN8_PIPE_VBLANK) { //pipe上有vblank中断
 			drm_handle_vblank(&dev_priv->drm, drm_crtc_index(&crtc->base));
 #if IS_ENABLED(CONFIG_DRM_I915_GVT)
-			gvt_notify_vblank(dev_priv, pipe);
+			gvt_notify_vblank(dev_priv, pipe); //通知gvt，给uos注入vblank中断
 #endif
 		}
 
